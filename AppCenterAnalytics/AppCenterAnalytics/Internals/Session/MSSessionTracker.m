@@ -11,6 +11,10 @@
 static NSTimeInterval const kMSSessionTimeOut = 20;
 static NSString *const kMSPastSessionsKey = @"PastSessions";
 
+NSString *const FTApplicationWillBecomeActiveNotification = @"FTApplicationWillBecomeActiveNotification";
+NSString *const FTApplicationDidResignActiveNotification = @"FTApplicationDidResignActiveNotification";
+NSString *const FTSessionTrackerRenewSessionIdNotification = @"FTSessionTrackerRenewSessionIdNotification";
+
 @interface MSSessionTracker ()
 
 /**
@@ -52,6 +56,8 @@ static NSString *const kMSPastSessionsKey = @"PastSessions";
         MSStartSessionLog *log = [[MSStartSessionLog alloc] init];
         log.sid = sessionId;
         [self.delegate sessionTracker:self processLog:log];
+        [MS_NOTIFICATION_CENTER postNotificationName:FTSessionTrackerRenewSessionIdNotification
+                                              object:sessionId];
       }
     }
   }
@@ -61,28 +67,16 @@ static NSString *const kMSPastSessionsKey = @"PastSessions";
   if (!self.started) {
     self.started = YES;
 
-    // Request a new session id depending on the application state.
-    MSApplicationState state = [MSUtility applicationState];
-    if (state == MSApplicationStateInactive || state == MSApplicationStateActive) {
-      [self renewSessionId];
-    }
+    [self renewSessionId];
 
     // Hookup to application events.
     [MS_NOTIFICATION_CENTER addObserver:self
-                               selector:@selector(applicationDidEnterBackground)
-#if TARGET_OS_OSX
-                                   name:NSApplicationDidResignActiveNotification
-#else
-                                   name:UIApplicationDidEnterBackgroundNotification
-#endif
+                               selector:@selector(applicationDidResignActive)
+                                   name:FTApplicationDidResignActiveNotification
                                  object:nil];
     [MS_NOTIFICATION_CENTER addObserver:self
-                               selector:@selector(applicationWillEnterForeground)
-#if TARGET_OS_OSX
-                                   name:NSApplicationWillBecomeActiveNotification
-#else
-                                   name:UIApplicationWillEnterForegroundNotification
-#endif
+                               selector:@selector(applicationWillBecomeActive)
+                                   name:FTApplicationWillBecomeActiveNotification
                                  object:nil];
   }
 }
@@ -127,11 +121,11 @@ static NSString *const kMSPastSessionsKey = @"PastSessions";
   }
 }
 
-- (void)applicationDidEnterBackground {
+- (void)applicationDidResignActive {
   self.lastEnteredBackgroundTime = [NSDate date];
 }
 
-- (void)applicationWillEnterForeground {
+- (void)applicationWillBecomeActive {
   self.lastEnteredForegroundTime = [NSDate date];
 
   // Trigger session renewal.

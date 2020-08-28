@@ -38,19 +38,19 @@ static dispatch_once_t onceToken;
     id<NSObject> oldKey = migratedKeys[newKey];
     NSString *newKeyString = (NSString *)newKey;
     if ([oldKey isKindOfClass:[NSString class]]) {
-      id value = [[NSUserDefaults standardUserDefaults] objectForKey:(NSString *)oldKey];
+      id value = [NS_USER_DEFAULTS objectForKey:(NSString *)oldKey];
       [self swapKeys:(NSString *)oldKey newKey:newKeyString value:value];
     } else {
       NSAssert([oldKey isKindOfClass:[MSUserDefaultsPrefixKey class]], @"Unsupported type");
 
       // List all the keys starting with oldKey.
       NSString *oldKeyPrefix = ((MSUserDefaultsPrefixKey *)oldKey).keyPrefix;
-      NSArray *userDefaultsDictionary = [[[NSUserDefaults standardUserDefaults] dictionaryRepresentation] allKeys];
+      NSArray *userDefaultsDictionary = [[NS_USER_DEFAULTS dictionaryRepresentation] allKeys];
       for (NSString *userDefaultsKey in userDefaultsDictionary) {
         if ([userDefaultsKey hasPrefix:oldKeyPrefix]) {
           NSString *suffix = [userDefaultsKey substringFromIndex:[oldKeyPrefix length]];
           NSString *newKeyWithSuffix = [newKeyString stringByAppendingString:suffix];
-          id value = [[NSUserDefaults standardUserDefaults] objectForKey:userDefaultsKey];
+          id value = [NS_USER_DEFAULTS objectForKey:userDefaultsKey];
           [self swapKeys:userDefaultsKey newKey:newKeyWithSuffix value:value];
         }
       }
@@ -63,8 +63,8 @@ static dispatch_once_t onceToken;
   if (value == nil) {
     return;
   }
-  [[NSUserDefaults standardUserDefaults] setObject:value forKey:newKey];
-  [[NSUserDefaults standardUserDefaults] removeObjectForKey:oldKey];
+  [NS_USER_DEFAULTS setObject:value forKey:newKey];
+  [NS_USER_DEFAULTS removeObjectForKey:oldKey];
   MSLogVerbose([MSAppCenter logTag], @"Migrating key %@ -> %@", oldKey, newKey);
 }
 
@@ -75,17 +75,17 @@ static dispatch_once_t onceToken;
 
 - (id)objectForKey:(NSString *)key {
   NSString *keyPrefixed = [self getAppCenterKeyFrom:key];
-  return [[NSUserDefaults standardUserDefaults] objectForKey:keyPrefixed];
+  return [NS_USER_DEFAULTS objectForKey:keyPrefixed];
 }
 
 - (void)setObject:(id)value forKey:(NSString *)key {
   NSString *keyPrefixed = [self getAppCenterKeyFrom:key];
-  [[NSUserDefaults standardUserDefaults] setObject:value forKey:keyPrefixed];
+  [NS_USER_DEFAULTS setObject:value forKey:keyPrefixed];
 }
 
 - (void)removeObjectForKey:(NSString *)key {
   NSString *keyPrefixed = [self getAppCenterKeyFrom:key];
-  [[NSUserDefaults standardUserDefaults] removeObjectForKey:keyPrefixed];
+  [NS_USER_DEFAULTS removeObjectForKey:keyPrefixed];
 }
 
 @end

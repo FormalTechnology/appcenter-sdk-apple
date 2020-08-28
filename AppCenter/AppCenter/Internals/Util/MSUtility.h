@@ -15,14 +15,24 @@
 #define APP_CENTER_C_NAME "appcenter.tvos"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  NSBundle *MSGetSelfBundle(void);
+  NSUserDefaults *MSGetUserDefaults(void);
+#ifdef __cplusplus
+}
+#endif
+
 #define MS_APP_CENTER_USER_DEFAULTS [MSAppCenterUserDefaults shared]
 #define MS_NOTIFICATION_CENTER [NSNotificationCenter defaultCenter]
 #define MS_UUID_STRING [[NSUUID UUID] UUIDString]
 #define MS_UUID_FROM_STRING(uuidString) [[NSUUID alloc] initWithUUIDString:uuidString]
 #define MS_LOCALE [NSLocale currentLocale]
 #define MS_CLASS_NAME_WITHOUT_PREFIX [NSStringFromClass([self class]) substringFromIndex:2]
-#define MS_IS_APP_EXTENSION ([[[NSBundle mainBundle] executablePath] rangeOfString:@".appex/"].length > 0)
-#define MS_APP_MAIN_BUNDLE [NSBundle mainBundle]
+#define MS_IS_APP_EXTENSION ([[MSGetSelfBundle() executablePath] rangeOfString:@".appex/"].length > 0)
+#define MS_APP_MAIN_BUNDLE MSGetSelfBundle()
+#define NS_USER_DEFAULTS MSGetUserDefaults()
 
 /**
  * Utility class that is used throughout the SDK.

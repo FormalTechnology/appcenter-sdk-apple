@@ -9,6 +9,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const FTApplicationWillBecomeActiveNotification;
+extern NSString *const FTApplicationDidResignActiveNotification;
+extern NSString *const FTSessionTrackerRenewSessionIdNotification;
+
 @interface MSSessionTracker : NSObject <MSChannelDelegate>
 
 /**
